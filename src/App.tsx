@@ -69,28 +69,5 @@ function App() {
     </OnboardingTour>
   );
 }
-              <button
-                onClick={() => setIsHelpOpen(true)}
-                className="absolute right-0 top-0 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-                title="Help & Documentation"
-              >
-                <HelpCircle className="w-6 h-6" />
-              </button>
-              <h1 className="text-4xl font-bold mb-2">Color Mixer</h1>
-              <p className="text-lg text-slate-600 dark:text-slate-400">
-                Create beautiful color palettes with interactive mixing
-              </p>
-            </header>
-
-            <main className="flex justify-center">
-              <ColorMixer />
-            </main>
-          </div>
-        </div>
-        <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-      </AnimationProfiler>
-    </OnboardingTour>
-  );
-}
 
 export default App;
