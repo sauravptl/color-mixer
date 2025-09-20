@@ -29,9 +29,46 @@ function App() {
   return (
     <OnboardingTour>
       <AnimationProfiler>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-          <div className="container mx-auto px-4 py-8">
-            <header className="text-center mb-8 relative" data-onboarding="welcome">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100">
+          <div className="w-full">
+            <header className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-800/60 sticky top-0 z-40" data-onboarding="welcome">
+              <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+                <div className="flex items-center justify-between">
+                  <div className="text-left">
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                      Color Mixer
+                    </h1>
+                    <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+                      Professional color palette creation and design system tools
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="hidden sm:flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                      <span>Live Preview</span>
+                    </div>
+                    <button
+                      onClick={() => setIsHelpOpen(true)}
+                      className="p-3 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm hover:shadow-md"
+                      title="Help & Documentation"
+                    >
+                      <HelpCircle className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <main className="w-full">
+              <ColorMixer />
+            </main>
+          </div>
+        </div>
+        <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
+      </AnimationProfiler>
+    </OnboardingTour>
+  );
+}
               <button
                 onClick={() => setIsHelpOpen(true)}
                 className="absolute right-0 top-0 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
