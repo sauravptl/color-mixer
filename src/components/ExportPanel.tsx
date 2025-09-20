@@ -255,59 +255,5 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ baseColor, paletteName = 'pal
     </div>
   );
 };
-                        </div>
-                      </div>
-
-                      {/* Code Preview */}
-                      <div className="bg-slate-50 dark:bg-slate-800/60 rounded p-3 mb-3 max-h-32 overflow-y-auto border border-slate-200 dark:border-slate-700">
-                        <pre className="text-xs font-mono whitespace-pre-wrap text-slate-800 dark:text-slate-200">
-                          {exportFormat.content.length > 200
-                            ? exportFormat.content.substring(0, 200) + '...'
-                            : exportFormat.content
-                          }
-                        </pre>
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleCopyToClipboard(exportFormat.content, exportFormat.name)}
-                          className="flex-1 inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 bg-emerald-500 text-white hover:bg-emerald-600"
-                        >
-                          📋 Copy
-                        </button>
-                        <button
-                          onClick={() => handleDownloadFile(exportFormat.content, exportFormat.filename)}
-                          className="flex-1 inline-flex items-center justify-center rounded-lg px-3 py-2 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 bg-purple-500 text-white hover:bg-purple-600"
-                        >
-                          💾 Download
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )
-          ))}
-        </div>
-      )}
-
-      {/* Usage Instructions */}
-      {exports.length > 0 && (
-        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6 border border-blue-200/60">
-          <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">How to use:</h4>
-          <div className="space-y-2 text-sm text-blue-800 dark:text-blue-200/90">
-            <p><strong>CSS/SCSS:</strong> Copy the custom properties into your stylesheets</p>
-            <p><strong>JavaScript:</strong> Use the Tailwind config to extend your theme</p>
-            <p><strong>JSON:</strong> Import design tokens into Figma, Sketch, or other design tools</p>
-            <p><strong>SVG:</strong> Use in web graphics or design applications</p>
-            <p><strong>ASE:</strong> Import into Adobe applications (Photoshop, Illustrator, etc.)</p>
-            <p><strong>Vue/React:</strong> Copy component code into your projects</p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default ExportPanel;
