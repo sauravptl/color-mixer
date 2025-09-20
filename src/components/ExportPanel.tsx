@@ -144,7 +144,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ baseColor, paletteName = 'pal
                         <h5 className="font-bold text-lg text-slate-900 dark:text-slate-100">{exportFormat.name}</h5>
                         <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold tracking-wider">
                           {exportFormat.format} FORMAT
-
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -157,14 +157,5 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ baseColor, paletteName = 'pal
     </div>
   );
 };
-export default ExportPanel;
 
-              )
-              )
-              }
-            )
-        )
-        )
-        }
-  )
-}
+export default ExportPanel;
