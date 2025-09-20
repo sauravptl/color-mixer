@@ -127,8 +127,6 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ baseColor, paletteName = 'pal
 
       {/* Export Results */}
       {exports.length > 0 && (
-          )
-          }
         <div className="space-y-10">
           {Object.entries(categorizeExports(exports)).map(([category, categoryExports]) => (
             categoryExports.length > 0 && (
@@ -147,6 +145,18 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ baseColor, paletteName = 'pal
                         <p className="text-sm text-slate-600 dark:text-slate-400 uppercase font-semibold tracking-wider">
                           {exportFormat.format} FORMAT
 
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 export default ExportPanel;
 
               )

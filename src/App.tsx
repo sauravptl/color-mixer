@@ -29,7 +29,7 @@ function App() {
   return (
     <OnboardingTour>
       <AnimationProfiler>
-        <>
+        <div>
           <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100">
             <div className="w-full">
               <header className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-800/60 sticky top-0 z-40" data-onboarding="welcome">
@@ -66,7 +66,7 @@ function App() {
             </div>
           </div>
           <HelpPanel isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
-        </>
+        </div>
       </AnimationProfiler>
     </OnboardingTour>
   );
