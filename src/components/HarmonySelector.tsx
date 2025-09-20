@@ -138,6 +138,7 @@ const HarmonySelector: React.FC<HarmonySelectorProps> = ({ baseColor, onHarmonyS
         </div>
       )}
     </div>
+  );
 };
 
 export default HarmonySelector;
