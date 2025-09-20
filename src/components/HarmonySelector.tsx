@@ -134,6 +134,7 @@ const HarmonySelector: React.FC<HarmonySelectorProps> = ({ baseColor, onHarmonyS
                 Apply {selectedHarmony} Harmony
               </button>
             </div>
+          </div>
         </div>
       )}
     </div>
