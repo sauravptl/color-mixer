@@ -150,7 +150,6 @@ const ExportPanel: React.FC<ExportPanelProps> = ({ baseColor, paletteName = 'pal
               </div>
             )
           ))}
-        </div>
       )}
     </div>
   );
