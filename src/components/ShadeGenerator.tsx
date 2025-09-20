@@ -29,7 +29,6 @@ const ShadeGenerator: React.FC<ShadeGeneratorProps> = ({ color1, color2, onShade
         <p className="text-sm text-slate-500 dark:text-slate-500">
           Create smooth color transitions and explore variations of your chosen colors
         </p>
-      </div>
 
       {/* Between Colors Shades */}
       <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl p-8 border-2 border-emerald-200 dark:border-emerald-800 shadow-sm hover:shadow-xl transition-all duration-300">
