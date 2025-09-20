@@ -387,70 +387,93 @@ const ColorMixer: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
-      {/* Main Content */}
-      <div className="w-full">
-        {/* Mixed Color Preview */}
-        <div className="w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-800/60">
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">
-                Live Color Preview
+      {/* Compact Mixed Color Preview */}
+      <div className="w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-center gap-6">
+            <div className="text-left">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
+                Mixed Result
               </h2>
-              <p className="text-slate-600 dark:text-slate-400">
-                Your mixed color updates in real-time as you adjust the stops below
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                From {currentPalette.colors.length} colors
               </p>
             </div>
             
-            <div className="flex justify-center mb-6">
-              <div
-                className="w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 rounded-3xl shadow-2xl border-4 border-white dark:border-slate-700 hover:scale-105 transition-transform duration-300 cursor-pointer"
-                style={{ backgroundColor: mixedColor }}
-                onClick={() => {
-                  navigator.clipboard?.writeText(mixedColor);
-                  showToastMessage(`Copied ${mixedColor}!`);
-                }}
-                title={`Click to copy ${mixedColor}`}
-              />
-            </div>
+            <div
+              className="w-20 h-20 rounded-2xl shadow-lg border-3 border-white dark:border-slate-700 hover:scale-110 transition-transform duration-200 cursor-pointer"
+              style={{ backgroundColor: mixedColor }}
+              onClick={() => {
+                navigator.clipboard?.writeText(mixedColor);
+                showToastMessage(`Copied ${mixedColor}!`);
+              }}
+              title={`Click to copy ${mixedColor}`}
+            />
             
-            <div className="text-center">
-              <div className="text-2xl font-mono font-bold text-slate-900 dark:text-slate-100 mb-2">
+            <div className="text-left">
+              <div className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">
                 {mixedColor}
               </div>
-              <div className="text-sm text-slate-500 dark:text-slate-400">
-                Mixed from {currentPalette.colors.length} color stops
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                Click to copy
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Navigation Tabs */}
+      <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-20 z-30 shadow-sm">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+          <div className="flex overflow-x-auto scrollbar-hide py-2">
+            {sections.map((section) => {
+              const Icon = section.icon;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id as any)}
+                  className={`flex items-center gap-3 px-6 py-4 text-sm font-medium rounded-xl border-2 transition-all duration-300 whitespace-nowrap mx-1 min-w-[140px] justify-center ${
+                    activeSection === section.id
+                      ? 'border-indigo-500 text-indigo-700 dark:text-indigo-300 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30 shadow-md transform scale-105'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-600 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:scale-102'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span>{section.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Content Sections with Better Visual Hierarchy */}
+      <div className="w-full">
+        {/* Section Header */}
+        <div className="w-full bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700">
+          <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+            <div className="text-center">
+              <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+                {sections.find(s => s.id === activeSection)?.label || 'Color Tools'}
+              </h2>
+              <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
+                {React.createElement(sections.find(s => s.id === activeSection)?.icon || Palette, { className: "w-5 h-5" })}
+                <span className="text-sm">
+                  {activeSection === 'colors' && 'Create and edit your color palette'}
+                  {activeSection === 'harmonies' && 'Discover color relationships based on theory'}
+                  {activeSection === 'shades' && 'Generate tints, shades, and variations'}
+                  {activeSection === 'accessibility' && 'Check WCAG compliance and contrast ratios'}
+                  {activeSection === 'export' && 'Export in multiple formats for your workflow'}
+                  {activeSection === 'examples' && 'Browse professionally designed palettes'}
+                  {activeSection === 'history' && 'View and manage your palette history'}
+                </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-20 z-30">
-          <div className="w-full px-4 sm:px-6 lg:px-8">
-            <div className="flex overflow-x-auto scrollbar-hide">
-              {sections.map((section) => {
-                const Icon = section.icon;
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => setActiveSection(section.id as any)}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
-                      activeSection === section.id
-                        ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-900/20'
-                        : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span className="hidden sm:inline">{section.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Content Sections */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content Area */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 bg-white/30 dark:bg-slate-900/30 min-h-[600px]">
           <AnimatePresence mode="wait">
             {activeSection === 'colors' && (
               <motion.div
@@ -459,20 +482,20 @@ const ColorMixer: React.FC = () => {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
-                className="space-y-8"
+                className="space-y-12"
               >
                 {/* Quick Actions */}
-                <div data-onboarding="quick-actions">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-                    Quick Actions
+                <div data-onboarding="quick-actions" className="bg-white dark:bg-slate-900/70 rounded-2xl p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 text-center">
+                    ⚡ Quick Actions
                   </h3>
                   <QuickActions actions={quickActions} />
                 </div>
 
                 {/* Color Controls */}
-                <div data-onboarding="color-inputs">
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-4">
-                    Color Stops
+                <div data-onboarding="color-inputs" className="bg-white dark:bg-slate-900/70 rounded-2xl p-8 shadow-sm border border-slate-200 dark:border-slate-800">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6 text-center">
+                    🎨 Color Stops
                   </h3>
                   <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
                     {currentPalette.colors.map((color, index) => (
@@ -505,7 +528,9 @@ const ColorMixer: React.FC = () => {
                 </div>
 
                 {/* Color Theory Tips */}
-                <ColorTheoryTips currentContext="general" />
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl p-8 border border-blue-200 dark:border-blue-800">
+                  <ColorTheoryTips currentContext="general" />
+                </div>
               </motion.div>
             )}
 
