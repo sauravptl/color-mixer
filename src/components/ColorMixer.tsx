@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import chroma from 'chroma-js';
 import AccessibilityPanel from './AccessibilityPanel';
 import ExportPanel from './ExportPanel';
@@ -15,6 +15,7 @@ import type { ColorHarmony } from '../utils/colorHarmony';
 import { useColorMixerStore } from '../stores/colorMixerStore';
 import { useKeyboardShortcuts, createColorMixerShortcuts } from '../hooks/useKeyboardShortcuts';
 import { quickExportPalette } from '../utils/zipExport';
+import { ChevronDown, ChevronUp, Palette, Settings, Eye, Download } from 'lucide-react';
 
 interface ColorStop {
   id: string;
@@ -55,6 +56,21 @@ const ColorMixer: React.FC<ColorMixerProps> = ({
   const [selectedHarmony, setSelectedHarmony] = useState<ColorHarmony | null>(null);
   const [generatedShades, setGeneratedShades] = useState<string[]>([]);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [expandedColorInputs, setExpandedColorInputs] = useState<Set<string>>(new Set());
+  const [activeSection, setActiveSection] = useState<string>('colors');
+  const [isMobileView, setIsMobileView] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Check if mobile view
+  useEffect(() => {
+    const checkMobileView = () => {
+      setIsMobileView(window.innerWidth < 768);
+    };
+    
+    checkMobileView();
+    window.addEventListener('resize', checkMobileView);
+    return () => window.removeEventListener('resize', checkMobileView);
+  }, []);
 
   // Sync with store
   useEffect(() => {
@@ -70,6 +86,7 @@ const ColorMixer: React.FC<ColorMixerProps> = ({
   }, [colorStops]);
 
   const handleRandomize = useCallback(() => {
+    setIsLoading(true);
     const newColorStops = colorStops.map(stop =>
       stop.locked ? stop : {
         ...stop,
@@ -78,15 +95,22 @@ const ColorMixer: React.FC<ColorMixerProps> = ({
     );
     setColorStops(newColorStops);
     updatePalette(newColorStops);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
   }, [colorStops, updatePalette]);
 
   const handleNewPalette = useCallback(() => {
+    setIsLoading(true);
     const newColors: ColorStop[] = [
       { id: '1', position: 0, color: '#3b82f6', locked: false }, // Blue
       { id: '2', position: 1, color: '#ec4899', locked: false }  // Pink
     ];
     setColorStops(newColors);
     updatePalette(newColors);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 200);
   }, [updatePalette]);
 
   const handleToggleComparison = useCallback(() => {
@@ -499,331 +523,603 @@ const ColorMixer: React.FC<ColorMixerProps> = ({
     }
   }, []);
 
+  const toggleColorInputExpansion = useCallback((stopId: string) => {
+    setExpandedColorInputs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stopId)) {
+        newSet.delete(stopId);
+      } else {
+        newSet.add(stopId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  const sections = [
+    { id: 'colors', label: 'Colors', icon: Palette },
+    { id: 'harmonies', label: 'Harmonies', icon: Eye },
+    { id: 'export', label: 'Export', icon: Download },
+    { id: 'settings', label: 'Settings', icon: Settings }
+  ];
+
   const gradientString = `linear-gradient(to right, ${colorStops.map(stop => `${stop.color} ${stop.position * 100}%`).join(', ')})`;
 
   return (
-    <div
-      className={`bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow transition-shadow p-4 sm:p-5 flex flex-col items-center gap-6 transition-colors ${isDragOver ? 'ring-2 ring-indigo-400 bg-indigo-50 dark:bg-indigo-900/20' : ''}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <div className="text-lg font-semibold">Color Mixer</div>
-      {isDragOver && (
-        <div className="text-indigo-600 dark:text-indigo-300 font-medium">Drop image here to extract colors</div>
+    <div className="w-full max-w-7xl mx-auto">
+      {/* Mobile Navigation */}
+      {isMobileView && (
+        <div className="sticky top-0 z-10 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 mb-4">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {sections.map((section) => {
+              const Icon = section.icon;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={`flex items-center gap-2 px-4 py-3 whitespace-nowrap text-sm font-medium transition-colors ${
+                    activeSection === section.id
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {section.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       )}
 
-      {/* Quick Actions */}
-      <div className="w-full max-w-4xl" data-onboarding="quick-actions">
-        <div className="bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow transition-shadow">
-          <div className="p-4 sm:p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-base font-semibold">Quick Actions</h3>
+      <div
+        className={`bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow transition-all duration-300 transition-colors ${
+          isDragOver ? 'ring-2 ring-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 scale-[1.02]' : ''
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        {/* Header */}
+        <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">Color Mixer</h1>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Create beautiful color palettes with interactive mixing
+              </p>
+            </div>
+            {isLoading && (
+              <div className="flex items-center gap-2 text-indigo-600">
+                <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Processing...</span>
+              </div>
+            )}
+          </div>
+          
+          {isDragOver && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 p-4 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg border-2 border-dashed border-indigo-300 dark:border-indigo-700"
+            >
+              <div className="text-indigo-700 dark:text-indigo-300 font-medium text-center">
+                📸 Drop image here to extract colors automatically
+              </div>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="p-4 sm:p-6">
+          {/* Quick Actions - Always Visible */}
+          <div className="mb-6" data-onboarding="quick-actions">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Quick Actions</h3>
             </div>
             <QuickActions actions={quickActions} />
           </div>
-        </div>
-      </div>
 
-      {/* Gradient Bar */}
-      <div
-        className="relative rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm cursor-crosshair"
-        style={{
-          width: `${width}px`,
-          height: `${height}px`,
-          background: gradientString
-        }}
-        onClick={(e) => {
-          const rect = e.currentTarget.getBoundingClientRect();
-          const position = (e.clientX - rect.left) / rect.width;
-          addColorStop(position);
-        }}
-        data-onboarding="gradient-bar"
-      >
-        {/* Color Stops */}
-        {colorStops.map((stop) => (
-          <motion.div
-            key={stop.id}
-            className={`absolute top-0 w-4 h-full flex items-center justify-center ${stop.locked ? 'cursor-not-allowed' : 'cursor-move'}`}
-            style={{
-              left: `${stop.position * 100}%`,
-              transform: 'translateX(-50%)'
-            }}
-            drag={stop.locked ? false : "x"}
-            dragConstraints={stop.locked ? undefined : { left: 0, right: width - 16 }}
-            dragElastic={0}
-            onDrag={(_, info) => {
-              const newPosition = (stop.position * width + info.delta.x) / width;
-              handleStopDrag(stop.id, newPosition);
-            }}
-            whileHover={{ scale: 1.2 }}
-            whileDrag={{ scale: 1.3, zIndex: 10 }}
-          >
-            <div
-              className="w-4 h-4 rounded-full border-2 border-white shadow-lg"
-              style={{ backgroundColor: stop.color }}
-            />
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Color Inputs */}
-      <div className="w-full max-w-md space-y-4" data-onboarding="color-inputs">
-        {colorStops.map((stop) => {
-          const colorValues = getColorValues(stop.color);
-          return (
-            <div key={stop.id} className="bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow transition-shadow">
-              <div className="p-4 sm:p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div
-                    className="w-6 h-6 rounded border border-slate-200 dark:border-slate-700"
-                    style={{ backgroundColor: stop.color }}
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={colorValues.hex}
-                        onChange={(e) => handleStopColorChange(stop.id, e.target.value)}
-                        className="w-8 h-8 rounded border border-slate-300 dark:border-slate-700 cursor-pointer"
-                      />
-                      <input
-                        type="text"
-                        value={colorValues.hex}
-                        onChange={(e) => handleStopColorChange(stop.id, e.target.value)}
-                        className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                        placeholder="#000000"
-                      />
-                      <button
-                        onClick={() => copyToClipboard(colorValues.hex, 'HEX color')}
-                        className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-                        title="Copy HEX"
-                      >
-                        📋
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => toggleLock(stop.id)}
-                    className={`inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed ${stop.locked ? 'bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400' : 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'}`}
+          {/* Gradient Bar with Responsive Size */}
+          <div className="mb-6" data-onboarding="gradient-bar">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Color Gradient</h3>
+            <div className="flex justify-center">
+              <div
+                className="relative rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm cursor-crosshair transition-all hover:shadow-md"
+                style={{
+                  width: isMobileView ? Math.min(320, window.innerWidth - 64) : width,
+                  height: isMobileView ? 80 : height,
+                  background: gradientString
+                }}
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const position = (e.clientX - rect.left) / rect.width;
+                  addColorStop(position);
+                }}
+              >
+                {/* Color Stops */}
+                {colorStops.map((stop) => (
+                  <motion.div
+                    key={stop.id}
+                    className={`absolute top-0 flex items-center justify-center ${
+                      stop.locked ? 'cursor-not-allowed' : 'cursor-move'
+                    }`}
+                    style={{
+                      width: isMobileView ? '24px' : '16px',
+                      height: '100%',
+                      left: `${stop.position * 100}%`,
+                      transform: 'translateX(-50%)'
+                    }}
+                    drag={stop.locked ? false : "x"}
+                    dragConstraints={stop.locked ? undefined : { 
+                      left: 0, 
+                      right: (isMobileView ? Math.min(320, window.innerWidth - 64) : width) - (isMobileView ? 24 : 16)
+                    }}
+                    dragElastic={0}
+                    onDrag={(_, info) => {
+                      const currentWidth = isMobileView ? Math.min(320, window.innerWidth - 64) : width;
+                      const newPosition = (stop.position * currentWidth + info.delta.x) / currentWidth;
+                      handleStopDrag(stop.id, newPosition);
+                    }}
+                    whileHover={{ scale: 1.2 }}
+                    whileDrag={{ scale: 1.3, zIndex: 10 }}
                   >
-                    {stop.locked ? '🔒' : '🔓'}
-                  </button>
-                  <button
-                    onClick={() => removeColorStop(stop.id)}
-                    className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 disabled:opacity-50 disabled:cursor-not-allowed bg-rose-500 text-white hover:bg-rose-600"
-                    disabled={colorStops.length <= 2}
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* RGB Inputs */}
-                <div className="mb-3">
-                  <div className="text-xs font-medium text-gray-600 mb-2">RGB</div>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="255"
-                      value={Math.round(colorValues.rgb[0])}
-                      onChange={(e) => handleRGBChange(stop.id, parseInt(e.target.value) || 0, colorValues.rgb[1], colorValues.rgb[2])}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="R"
+                    <div
+                      className={`${isMobileView ? 'w-6 h-6' : 'w-4 h-4'} rounded-full border-2 border-white shadow-lg ring-1 ring-black/10`}
+                      style={{ backgroundColor: stop.color }}
                     />
-                    <input
-                      type="number"
-                      min="0"
-                      max="255"
-                      value={Math.round(colorValues.rgb[1])}
-                      onChange={(e) => handleRGBChange(stop.id, colorValues.rgb[0], parseInt(e.target.value) || 0, colorValues.rgb[2])}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="G"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="255"
-                      value={Math.round(colorValues.rgb[2])}
-                      onChange={(e) => handleRGBChange(stop.id, colorValues.rgb[0], colorValues.rgb[1], parseInt(e.target.value) || 0)}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="B"
-                    />
-                  </div>
-                </div>
-
-                {/* HSL Inputs */}
-                <div className="mb-3">
-                  <div className="text-xs font-medium text-gray-600 mb-2">HSL</div>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="360"
-                      value={Math.round(colorValues.hsl[0])}
-                      onChange={(e) => handleHSLChange(stop.id, parseInt(e.target.value) || 0, colorValues.hsl[1], colorValues.hsl[2])}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="H"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={colorValues.hsl[1].toFixed(2)}
-                      onChange={(e) => handleHSLChange(stop.id, colorValues.hsl[0], parseFloat(e.target.value) || 0, colorValues.hsl[2])}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="S"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={colorValues.hsl[2].toFixed(2)}
-                      onChange={(e) => handleHSLChange(stop.id, colorValues.hsl[0], colorValues.hsl[1], parseFloat(e.target.value) || 0)}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="L"
-                    />
-                  </div>
-                </div>
-
-                {/* HSV Inputs */}
-                <div>
-                  <div className="text-xs font-medium text-gray-600 mb-2">HSV</div>
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min="0"
-                      max="360"
-                      value={Math.round(colorValues.hsv[0])}
-                      onChange={(e) => handleHSVChange(stop.id, parseInt(e.target.value) || 0, colorValues.hsv[1], colorValues.hsv[2])}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="H"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={colorValues.hsv[1].toFixed(2)}
-                      onChange={(e) => handleHSVChange(stop.id, colorValues.hsv[0], parseFloat(e.target.value) || 0, colorValues.hsv[2])}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="S"
-                    />
-                    <input
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={colorValues.hsv[2].toFixed(2)}
-                      onChange={(e) => handleHSVChange(stop.id, colorValues.hsv[0], colorValues.hsv[1], parseFloat(e.target.value) || 0)}
-                      className="w-16 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-1.5 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
-                      placeholder="V"
-                    />
-                  </div>
-                </div>
+                    {stop.locked && (
+                      <div className="absolute -top-2 -right-2 w-3 h-3 bg-indigo-500 rounded-full flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
               </div>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Controls */}
-      <div className="flex gap-2">
-        <button
-          onClick={randomizeColors}
-          className="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-        >
-          🎲 Randomize
-        </button>
-        <button
-          onClick={openEyedropper}
-          className="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-          title="Pick color from screen (EyeDropper)"
-        >
-          👁️ Eyedropper
-        </button>
-      </div>
-
-      {/* Mixed Color Preview */}
-      <div className="flex flex-col items-center gap-2">
-        <div className="text-sm font-medium">Mixed Color Preview</div>
-        <div className="flex items-center gap-2">
-          <div
-            className="w-16 h-16 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer"
-            style={{ backgroundColor: mixedColor }}
-            onClick={() => copyToClipboard(mixedColor, 'Mixed color')}
-            title="Click to copy mixed color"
-          />
-          <button
-            onClick={() => copyToClipboard(mixedColor, 'Mixed color')}
-            className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
-            title="Copy mixed color"
-          >
-            📋
-          </button>
-        </div>
-        <div className="text-xs text-gray-500 font-mono">{mixedColor.toUpperCase()}</div>
-      </div>
-
-      {/* Smart Color Generation */}
-      <div className="w-full max-w-4xl mt-8">
-        <h2 className="text-xl font-bold mb-6 text-center">Smart Color Generation</h2>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Harmony Selector */}
-          <div className="space-y-4" data-onboarding="harmonies">
-            <HarmonySelector
-              baseColor={colorStops[0]?.color || '#ff0000'}
-              onHarmonySelect={handleHarmonySelect}
-            />
-            {selectedHarmony && (
-              <button
-                onClick={applyHarmony}
-                className="w-full inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-              >
-                Apply {selectedHarmony.name} Harmony
-              </button>
-            )}
+            <p className="text-sm text-slate-500 dark:text-slate-400 text-center mt-2">
+              Click anywhere on the gradient to add a color stop, or drag existing stops to reposition them
+            </p>
           </div>
 
-          {/* Shade Generator */}
-          <div className="space-y-4">
-            <ShadeGenerator
-              color1={colorStops[0]?.color || '#ff0000'}
-              color2={colorStops[colorStops.length - 1]?.color || '#0000ff'}
-              onShadesGenerated={handleShadesGenerated}
-            />
-            {generatedShades.length > 0 && (
-              <button
-                onClick={applyShades}
-                className="w-full inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+          {/* Section Content */}
+          <AnimatePresence mode="wait">
+            {(!isMobileView || activeSection === 'colors') && (
+              <motion.div
+                key="colors"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
               >
-                Apply Generated Shades
-              </button>
+                {/* Color Inputs */}
+                <div className="mb-8" data-onboarding="color-inputs">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Color Controls</h3>
+                    <span className="text-sm text-slate-500 dark:text-slate-400">
+                      {colorStops.length} color{colorStops.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  
+                  <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+                    {colorStops.map((stop) => {
+                      const colorValues = getColorValues(stop.color);
+                      const isExpanded = expandedColorInputs.has(stop.id);
+                      
+                      return (
+                        <motion.div 
+                          key={stop.id} 
+                          className="bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow transition-all"
+                          layout
+                        >
+                          <div className="p-4">
+                            {/* Main Color Controls */}
+                            <div className="flex items-center gap-3 mb-3">
+                              <div
+                                className="w-8 h-8 rounded-lg border-2 border-slate-200 dark:border-slate-700 shadow-sm flex-shrink-0"
+                                style={{ backgroundColor: stop.color }}
+                              />
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="color"
+                                    value={colorValues.hex}
+                                    onChange={(e) => handleStopColorChange(stop.id, e.target.value)}
+                                    className="w-10 h-10 rounded-lg border border-slate-300 dark:border-slate-700 cursor-pointer bg-transparent"
+                                    title="Pick color"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={colorValues.hex}
+                                    onChange={(e) => handleStopColorChange(stop.id, e.target.value)}
+                                    className="flex-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono transition-colors"
+                                    placeholder="#000000"
+                                  />
+                                  <button
+                                    onClick={() => copyToClipboard(colorValues.hex, 'HEX color')}
+                                    className="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 active:scale-95"
+                                    title="Copy HEX"
+                                  >
+                                    📋
+                                  </button>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => toggleColorInputExpansion(stop.id)}
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
+                                  title={isExpanded ? "Hide advanced controls" : "Show advanced controls"}
+                                >
+                                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </button>
+                                <button
+                                  onClick={() => toggleLock(stop.id)}
+                                  className={`inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                                    stop.locked 
+                                      ? 'bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400' 
+                                      : 'bg-transparent hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+                                  }`}
+                                  title={stop.locked ? "Unlock color" : "Lock color"}
+                                >
+                                  {stop.locked ? '🔒' : '🔓'}
+                                </button>
+                                <button
+                                  onClick={() => removeColorStop(stop.id)}
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 bg-rose-500 text-white hover:bg-rose-600 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                                  disabled={colorStops.length <= 2}
+                                  title="Remove color"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            </div>
+
+                            {/* Advanced Color Controls - Collapsible */}
+                            <AnimatePresence>
+                              {isExpanded && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: 'auto', opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
+                                    {/* RGB Inputs */}
+                                    <div className="mb-4">
+                                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">RGB</div>
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">R</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="255"
+                                            value={Math.round(colorValues.rgb[0])}
+                                            onChange={(e) => handleRGBChange(stop.id, parseInt(e.target.value) || 0, colorValues.rgb[1], colorValues.rgb[2])}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">G</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="255"
+                                            value={Math.round(colorValues.rgb[1])}
+                                            onChange={(e) => handleRGBChange(stop.id, colorValues.rgb[0], parseInt(e.target.value) || 0, colorValues.rgb[2])}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">B</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="255"
+                                            value={Math.round(colorValues.rgb[2])}
+                                            onChange={(e) => handleRGBChange(stop.id, colorValues.rgb[0], colorValues.rgb[1], parseInt(e.target.value) || 0)}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* HSL Inputs */}
+                                    <div className="mb-4">
+                                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">HSL</div>
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">H</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="360"
+                                            value={Math.round(colorValues.hsl[0])}
+                                            onChange={(e) => handleHSLChange(stop.id, parseInt(e.target.value) || 0, colorValues.hsl[1], colorValues.hsl[2])}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">S</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value={colorValues.hsl[1].toFixed(2)}
+                                            onChange={(e) => handleHSLChange(stop.id, colorValues.hsl[0], parseFloat(e.target.value) || 0, colorValues.hsl[2])}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">L</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value={colorValues.hsl[2].toFixed(2)}
+                                            onChange={(e) => handleHSLChange(stop.id, colorValues.hsl[0], colorValues.hsl[1], parseFloat(e.target.value) || 0)}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* HSV Inputs */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-wider">HSV</div>
+                                      <div className="grid grid-cols-3 gap-2">
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">H</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="360"
+                                            value={Math.round(colorValues.hsv[0])}
+                                            onChange={(e) => handleHSVChange(stop.id, parseInt(e.target.value) || 0, colorValues.hsv[1], colorValues.hsv[2])}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">S</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value={colorValues.hsv[1].toFixed(2)}
+                                            onChange={(e) => handleHSVChange(stop.id, colorValues.hsv[0], parseFloat(e.target.value) || 0, colorValues.hsv[2])}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-xs text-slate-500 dark:text-slate-400">V</label>
+                                          <input
+                                            type="number"
+                                            min="0"
+                                            max="1"
+                                            step="0.01"
+                                            value={colorValues.hsv[2].toFixed(2)}
+                                            onChange={(e) => handleHSVChange(stop.id, colorValues.hsv[0], colorValues.hsv[1], parseFloat(e.target.value) || 0)}
+                                            className="w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
             )}
+
+            {(!isMobileView || activeSection === 'harmonies') && (
+              <motion.div
+                key="harmonies"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+                className="mb-8"
+              >
+                {/* Smart Color Generation */}
+                <div data-onboarding="harmonies">
+                  <h2 className="text-xl font-bold mb-6 text-slate-900 dark:text-slate-100">Smart Color Generation</h2>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Harmony Selector */}
+                    <div className="space-y-4">
+                      <HarmonySelector
+                        baseColor={colorStops[0]?.color || '#ff0000'}
+                        onHarmonySelect={handleHarmonySelect}
+                      />
+                      {selectedHarmony && (
+                        <button
+                          onClick={applyHarmony}
+                          className="w-full inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 active:scale-[0.98]"
+                        >
+                          Apply {selectedHarmony.name} Harmony
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Shade Generator */}
+                    <div className="space-y-4">
+                      <ShadeGenerator
+                        color1={colorStops[0]?.color || '#ff0000'}
+                        color2={colorStops[colorStops.length - 1]?.color || '#0000ff'}
+                        onShadesGenerated={handleShadesGenerated}
+                      />
+                      {generatedShades.length > 0 && (
+                        <button
+                          onClick={applyShades}
+                          className="w-full inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 bg-slate-600 text-white hover:bg-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 active:scale-[0.98]"
+                        >
+                          Apply Generated Shades
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {(!isMobileView || activeSection === 'export') && (
+              <motion.div
+                key="export"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Export Panel */}
+                <div className="mb-8" data-onboarding="export">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Export Options</h2>
+                    <button
+                      onClick={() => setIsExportModalOpen(true)}
+                      className="inline-flex items-center justify-center rounded-lg px-6 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 active:scale-[0.98]"
+                    >
+                      🎯 Advanced Export
+                    </button>
+                  </div>
+
+                  <ExportPanel
+                    baseColor={colorStops[0]?.color || '#ff0000'}
+                    paletteName="my-palette"
+                  />
+                </div>
+              </motion.div>
+            )}
+
+            {(!isMobileView || activeSection === 'settings') && (
+              <motion.div
+                key="settings"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Additional Controls */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Additional Tools</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={randomizeColors}
+                      disabled={isLoading}
+                      className="inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 active:scale-[0.98]"
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Randomizing...
+                        </>
+                      ) : (
+                        <>🎲 Randomize</>
+                      )}
+                    </button>
+                    <button
+                      onClick={openEyedropper}
+                      className="inline-flex items-center justify-center rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 bg-slate-100 text-slate-900 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 active:scale-[0.98]"
+                      title="Pick color from screen (EyeDropper)"
+                    >
+                      👁️ Eyedropper
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mixed Color Preview */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">Mixed Color Preview</h3>
+                  <div className="flex flex-col items-center gap-3 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className="w-20 h-20 rounded-2xl border-2 border-white dark:border-slate-700 shadow-lg cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                        style={{ backgroundColor: mixedColor }}
+                        onClick={() => copyToClipboard(mixedColor, 'Mixed color')}
+                        title="Click to copy mixed color"
+                      />
+                      <div>
+                        <div className="text-lg font-mono font-bold text-slate-900 dark:text-slate-100">{mixedColor.toUpperCase()}</div>
+                        <button
+                          onClick={() => copyToClipboard(mixedColor, 'Mixed color')}
+                          className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 active:scale-95"
+                          title="Copy mixed color"
+                        >
+                          📋 Copy Color
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Non-mobile sections - always visible */}
+      {!isMobileView && (
+        <>
+          {/* Accessibility Panel */}
+          <div className="mt-8">
+            <AccessibilityPanel
+              colors={colorStops.map(stop => stop.color)}
+              backgroundColor="#ffffff"
+              onColorFix={handleColorFix}
+            />
           </div>
-        </div>
-      </div>
 
-      {/* Export Panel */}
-      <div className="w-full max-w-4xl mt-8" data-onboarding="export">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Export Options</h2>
-          <button
-            onClick={() => setIsExportModalOpen(true)}
-            className="inline-flex items-center justify-center rounded-lg px-6 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
-          >
-            🎯 Advanced Export
-          </button>
-        </div>
+          {/* Example Galleries */}
+          <div className="mt-8">
+            <ExampleGalleries
+              onPaletteSelect={(colors) => {
+                setColorStops(colors);
+                updatePalette(colors);
+              }}
+            />
+          </div>
 
-        <ExportPanel
-          baseColor={colorStops[0]?.color || '#ff0000'}
-          paletteName="my-palette"
-        />
-      </div>
+          {/* Color Theory Tips */}
+          <div className="mt-8">
+            <ColorTheoryTips
+              currentContext="general"
+              isVisible={true}
+            />
+          </div>
+
+          {/* Palette History */}
+          <div className="mt-8">
+            <PaletteHistory
+              history={history.past}
+              onRestorePalette={(palette) => {
+                setColorStops(palette.colors);
+                updatePalette(palette.colors);
+              }}
+              onAddToComparison={(palette) => addToComparison(palette)}
+              onSaveToFavorites={(palette) => addToFavorites(palette)}
+            />
+          </div>
+
+          {/* Palette Comparison */}
+          {comparisonPalettes.length > 0 && (
+            <div className="mt-8">
+              <PaletteComparison
+                palettes={comparisonPalettes}
+                onRemovePalette={(id) => removeFromComparison(id)}
+                onClose={() => clearComparison()}
+              />
+            </div>
+          )}
+        </>
+      )}
 
       {/* Modal Export Dialog */}
       <ModalExportDialog
@@ -833,62 +1129,19 @@ const ColorMixer: React.FC<ColorMixerProps> = ({
         paletteName="my-palette"
       />
 
-      {/* Accessibility Panel */}
-      <div className="w-full max-w-4xl mt-8">
-        <AccessibilityPanel
-          colors={colorStops.map(stop => stop.color)}
-          backgroundColor="#ffffff"
-          onColorFix={handleColorFix}
-        />
-      </div>
-
-      {/* Example Galleries */}
-      <div className="w-full max-w-6xl mt-8">
-        <ExampleGalleries
-          onPaletteSelect={(colors) => {
-            setColorStops(colors);
-            updatePalette(colors);
-          }}
-        />
-      </div>
-
-      {/* Color Theory Tips */}
-      <div className="w-full max-w-4xl mt-8">
-        <ColorTheoryTips
-          currentContext="general"
-          isVisible={true}
-        />
-      </div>
-
-      {/* Palette History */}
-      <div className="w-full max-w-4xl mt-8">
-        <PaletteHistory
-          history={history.past}
-          onRestorePalette={(palette) => {
-            setColorStops(palette.colors);
-            updatePalette(palette.colors);
-          }}
-          onAddToComparison={(palette) => addToComparison(palette)}
-          onSaveToFavorites={(palette) => addToFavorites(palette)}
-        />
-      </div>
-
-      {/* Palette Comparison */}
-      {comparisonPalettes.length > 0 && (
-        <div className="w-full max-w-6xl mt-8">
-          <PaletteComparison
-            palettes={comparisonPalettes}
-            onRemovePalette={(id) => removeFromComparison(id)}
-            onClose={() => clearComparison()}
-          />
-        </div>
-      )}
-
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
-          {toastMessage}
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-sm"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-white rounded-full"></div>
+            {toastMessage}
+          </div>
+        </motion.div>
       )}
     </div>
   );
