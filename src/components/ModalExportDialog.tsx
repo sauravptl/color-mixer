@@ -62,20 +62,20 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto text-slate-900 dark:text-slate-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
           <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Export Color Palette</h2>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-2xl"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-2xl font-bold"
           >
             ×
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 bg-white dark:bg-slate-800">
           {/* Configuration */}
           <div className="mb-6">
             <div className="flex items-center gap-4 mb-4">
@@ -93,7 +93,7 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
                 type="text"
                 value={currentName}
                 onChange={(e) => setCurrentName(e.target.value)}
-                className="px-3 py-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="px-3 py-2 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Enter palette name"
               />
             </div>
@@ -121,7 +121,7 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {allFormats.map((format) => (
-                <div key={format.name} className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900/70 shadow-sm">
+                <div key={format.name} className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-slate-700 shadow-sm">
                   <input
                     type="checkbox"
                     checked={selectedExports.has(format.name)}
@@ -139,7 +139,7 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
                        format.format === 'vue' ? '💚' : '📁'}
                     </span>
                     <div>
-                      <div className="font-medium text-sm">{format.name}</div>
+                      <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{format.name}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400 uppercase">{format.format}</div>
                     </div>
                   </div>
@@ -156,7 +156,7 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
             <div className="flex gap-3">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="px-4 py-2 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium"
               >
                 Cancel
               </button>
@@ -164,14 +164,14 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
                 <button
                   onClick={handleGenerateSelected}
                   disabled={selectedExports.size === 0}
-                  className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-slate-300"
+                  className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-slate-300 font-medium"
                 >
                   Generate Exports
                 </button>
               ) : (
                 <button
                   onClick={handleBulkDownload}
-                  className="px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600"
+                  className="px-4 py-2 rounded-md bg-emerald-500 text-white hover:bg-emerald-600 font-medium"
                 >
                   Download All ({exports.length})
                 </button>
@@ -181,11 +181,11 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
 
           {/* Generated Exports Preview */}
           {exports.length > 0 && (
-            <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-6">
+            <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-6 bg-white dark:bg-slate-800">
               <h3 className="text-lg font-semibold mb-4">Generated Exports</h3>
               <div className="space-y-3 max-h-60 overflow-y-auto">
                 {exports.map((exportFormat, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-xl border border-slate-200 dark:border-slate-600">
                     <div className="flex items-center gap-3">
                       <span className="text-lg">
                         {exportFormat.format === 'css' ? '🎨' :
@@ -197,7 +197,7 @@ const ModalExportDialog: React.FC<ModalExportDialogProps> = ({
                          exportFormat.format === 'vue' ? '💚' : '📁'}
                       </span>
                       <div>
-                        <div className="font-medium text-sm">{exportFormat.name}</div>
+                        <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{exportFormat.name}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">{exportFormat.filename}</div>
                       </div>
                     </div>

@@ -27,22 +27,22 @@ const PrivacyNotice: React.FC<PrivacyNoticeProps> = ({ isOpen, onClose }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-slate-900 rounded-lg shadow-xl z-50 overflow-hidden"
+            className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-slate-800 rounded-lg shadow-xl z-50 overflow-hidden text-slate-900 dark:text-slate-100"
           >
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
               <div className="flex items-center space-x-2">
                 <Shield className="w-5 h-5 text-blue-500" />
-                <h2 className="text-lg font-semibold">Privacy Notice</h2>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Privacy Notice</h2>
               </div>
               <button
                 onClick={onClose}
-                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-6 space-y-4 bg-white dark:bg-slate-800">
               <div className="flex items-start space-x-3">
                 <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                 <div className="text-sm text-slate-600 dark:text-slate-400">
@@ -75,10 +75,10 @@ const PrivacyNotice: React.FC<PrivacyNoticeProps> = ({ isOpen, onClose }) => {
               </div>
             </div>
 
-            <div className="flex justify-end p-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
               <button
                 onClick={onClose}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors font-medium"
               >
                 I Understand
               </button>
