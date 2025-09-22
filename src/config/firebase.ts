@@ -1,14 +1,14 @@
 import { initializeApp } from 'firebase/app';
 
 // Firebase configuration
-// You'll need to replace these with your actual Firebase project config
+// Get these values from your Firebase Console -> Project Settings -> General -> Your apps
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "color-mixer-app.firebaseapp.com",
-  projectId: "color-mixer-app",
-  storageBucket: "color-mixer-app.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: "YOUR_API_KEY_HERE",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID"
 };
 
 // Initialize Firebase
