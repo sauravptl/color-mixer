@@ -27,17 +27,17 @@ function App() {
 
   return (
     <OnboardingTour>
-      <div>
+      <div className="min-h-screen w-full">
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100">
-          <div className="w-full">
+          <div className="w-full min-h-screen">
             <header className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-800/60 sticky top-0 z-40" data-onboarding="welcome">
-              <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+              <div className="w-full px-2 sm:px-4 lg:px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="text-left">
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">
                       Color Mixer
                     </h1>
-                    <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400">
+                    <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
                       Professional color palette creation and design system tools
                     </p>
                   </div>

@@ -389,10 +389,10 @@ const ColorMixer: React.FC = () => {
     <div className="w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Compact Mixed Color Preview */}
       <div className="w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm border-b border-slate-200/60 dark:border-slate-800/60 shadow-sm">
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+        <div className="w-full px-2 sm:px-4 lg:px-6 py-3">
           <div className="flex items-center justify-center gap-6">
             <div className="text-left">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
                 Mixed Result
               </h2>
               <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -424,7 +424,7 @@ const ColorMixer: React.FC = () => {
 
       {/* Enhanced Navigation Tabs */}
       <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-20 z-30 shadow-sm">
-        <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="w-full px-2 sm:px-4 lg:px-6">
           <div className="flex overflow-x-auto scrollbar-hide py-2">
             {sections.map((section) => {
               const Icon = section.icon;
@@ -451,9 +451,9 @@ const ColorMixer: React.FC = () => {
       <div className="w-full">
         {/* Section Header */}
         <div className="w-full bg-gradient-to-r from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900 border-b border-slate-200 dark:border-slate-700">
-          <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+          <div className="w-full px-2 sm:px-4 lg:px-6 py-4">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2">
                 {sections.find(s => s.id === activeSection)?.label || 'Color Tools'}
               </h2>
               <div className="flex items-center justify-center gap-2 text-slate-600 dark:text-slate-400">
@@ -473,7 +473,7 @@ const ColorMixer: React.FC = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="w-full px-4 sm:px-6 lg:px-8 py-8 bg-white/30 dark:bg-slate-900/30 min-h-[600px]">
+        <div className="w-full px-2 sm:px-4 lg:px-6 py-6 bg-white/30 dark:bg-slate-900/30 min-h-[calc(100vh-200px)]">
           <AnimatePresence mode="wait">
             {activeSection === 'colors' && (
               <motion.div
